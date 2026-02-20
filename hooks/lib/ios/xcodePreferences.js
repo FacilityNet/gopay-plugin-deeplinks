@@ -9,6 +9,8 @@ Which is:
 var path = require('path');
 var compare = require('node-version-compare');
 var ConfigXmlHelper = require('../configXmlHelper.js');
+var fileUtil = require('./fileUtil.js');
+
 var IOS_DEPLOYMENT_TARGET = '8.0';
 var COMMENT_KEY = /_comment$/;
 var context;
@@ -52,7 +54,7 @@ function enableAssociativeDomainsCapability(cordovaContext) {
  */
 function activateAssociativeDomains(xcodeProject) {
   var configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection());
-  var entitlementsFilePath = pathToEntitlementsFile();
+  var entitlementsFilePath = fileUtil.pathToEntitlementsFile(context);
   var config;
   var buildSettings;
   var deploymentTargetIsUpdated;
@@ -91,7 +93,7 @@ function activateAssociativeDomains(xcodeProject) {
  */
 function addPbxReference(xcodeProject) {
   var fileReferenceSection = nonComments(xcodeProject.pbxFileReferenceSection());
-  var entitlementsFileName = path.basename(pathToEntitlementsFile());
+  var entitlementsFileName = path.basename(fileUtil.pathToEntitlementsFile(context));
 
   if (isPbxReferenceAlreadySet(fileReferenceSection, entitlementsFileName)) {
     console.log('Entitlements file is in reference section.');
@@ -139,15 +141,15 @@ function loadProjectFile() {
   try {
       // try pre-5.0 cordova structure
       platform_ios = context.requireCordovaModule('cordova-lib/src/plugman/platforms')['ios'];
-      projectFile = platform_ios.parseProjectFile(iosPlatformPath());
+      projectFile = platform_ios.parseProjectFile(fileUtil.iosPlatformPath(context));
   } catch (e) {
       try {
           // let's try cordova 5.0 structure
           platform_ios = context.requireCordovaModule('cordova-lib/src/plugman/platforms/ios');
-          projectFile = platform_ios.parseProjectFile(iosPlatformPath());
+          projectFile = platform_ios.parseProjectFile(fileUtil.iosPlatformPath(context));
       } catch (e) {
           // Then cordova 7.0
-          var project_files = require('glob').sync(path.join(iosPlatformPath(), '*.xcodeproj', 'project.pbxproj'));
+          var project_files = require('glob').sync(path.join(fileUtil.iosPlatformPath(context), '*.xcodeproj', 'project.pbxproj'));
           
           if (project_files.length === 0) {
               throw new Error('does not appear to be an xcode project (no xcode project file)');
@@ -163,7 +165,7 @@ function loadProjectFile() {
               write: function () {
                   var fs = require('fs');
                   
-              var frameworks_file = path.join(iosPlatformPath(), 'frameworks.json');
+              var frameworks_file = path.join(fileUtil.iosPlatformPath(context), 'frameworks.json');
               var frameworks = {};
               try {
                   frameworks = context.requireCordovaModule(frameworks_file);
@@ -201,26 +203,6 @@ function nonComments(obj) {
   }
 
   return newObj;
-}
-
-// endregion
-
-// region Path helpers
-
-function iosPlatformPath() {
-  return path.join(projectRoot(), 'platforms', 'ios');
-}
-
-function projectRoot() {
-  return context.opts.projectRoot;
-}
-
-function pathToEntitlementsFile() {
-  var configXmlHelper = new ConfigXmlHelper(context),
-    projectName = configXmlHelper.getProjectName(),
-    fileName = projectName + '.entitlements';
-
-  return path.join(projectName, 'Resources', fileName);
 }
 
 // endregion

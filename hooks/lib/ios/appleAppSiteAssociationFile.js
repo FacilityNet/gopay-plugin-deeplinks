@@ -22,6 +22,8 @@ var mkpath = require('mkpath');
 var fs = require('fs');
 var rimraf = require('rimraf');
 var ConfigXmlHelper = require('../configXmlHelper.js');
+var fileUtil = require('./fileUtil.js');
+
 var IOS_TEAM_ID = '<YOUR_TEAM_ID_FROM_MEMBER_CENTER>';
 var ASSOCIATION_FILE_NAME = 'apple-app-site-association';
 var bundleId;
@@ -53,7 +55,7 @@ function generate(cordovaContext, pluginPreferences) {
  * Remove old files from ul_web_hooks/ios folder.
  */
 function removeOldFiles() {
-  rimraf.sync(getWebHookDirectory());
+  rimraf.sync(fileUtil.pathToWebHookDirectory(context));
 }
 
 /**
@@ -107,7 +109,7 @@ function generateFileContentForHost(host, teamId) {
  * @param {Object} content - file content as JSON object
  */
 function saveContentToFile(filePrefix, content) {
-  var dirPath = getWebHookDirectory();
+  var dirPath = fileUtil.pathToWebHookDirectory(context);
   var filePath = path.join(dirPath, filePrefix + '#' + ASSOCIATION_FILE_NAME);
 
   // create all directories from file path
@@ -137,24 +139,6 @@ function createDirectoriesIfNeeded(dirPath) {
 // endregion
 
 // region Support methods
-
-/**
- * Path to the ios web hook directory.
- *
- * @return {String} path to web hook directory
- */
-function getWebHookDirectory() {
-  return path.join(getProjectRoot(), 'ul_web_hooks', 'ios');
-}
-
-/**
- * Project root directory
- *
- * @return {String} absolute path to project root
- */
-function getProjectRoot() {
-  return context.opts.projectRoot;
-}
 
 /**
  * Get bundle id from the config.xml file.

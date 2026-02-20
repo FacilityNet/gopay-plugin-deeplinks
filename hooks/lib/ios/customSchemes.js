@@ -3,6 +3,7 @@ var fs = require('fs');
 var mkpath = require('mkpath');
 var plist = require('plist');
 var ConfigXmlHelper = require('../configXmlHelper.js');
+var fileUtil = require('./fileUtil.js');
 
 var CF_BUNDLE_URL_TYPES = "CFBundleURLTypes";
 var CF_BUNDLE_URL_NAME = "CFBundleURLName";
@@ -12,7 +13,6 @@ var CF_BUNDLE_URL_SCHEMES = "CFBundleURLSchemes";
 
 var context;
 var configHelper;
-var projectInfoFilePath;
 
 module.exports = {
     generateCustomUrlSchemes: generateUrlSchemes
@@ -30,14 +30,14 @@ function generateUrlSchemes(cordovaContext, pluginPreferences) {
 
 function saveContentToProjectInfoFile(content) {
     var plistContent = plist.build(content);
-    var filePath = pathToProjectInfoFile();
+    var filePath = fileUtil.pathToProjectInfoFile();
 
     mkpath.sync(path.dirname(filePath));
     fs.writeFileSync(filePath, plistContent, "utf8");
 }
 
 function getProjectInfoFileContent() {
-    var filePath = pathToProjectInfoFile();
+    var filePath = fileUtil.pathToProjectInfoFile(context);
     var content;
 
     try {
@@ -111,43 +111,6 @@ function entryForCustomScheme(scheme) {
     return scheme.name;
 }
 
-// region Path helper methods
-
-/**
- * Path to entitlements file.
- *
- * @return {String} absolute path to entitlements file
- */
-function pathToProjectInfoFile() {
-    if (projectInfoFilePath === undefined) {
-        projectInfoFilePath = path.join(getProjectRoot(), 'platforms', 'ios', getProjectName(), getProjectName() + '-Info.plist');
-    }
-
-    return projectInfoFilePath;
-}
-
-/**
- * Projects root folder path.
- *
- * @return {String} absolute path to the projects root
- */
-function getProjectRoot() {
-    return context.opts.projectRoot;
-}
-
-/**
- * Name of the project from config.xml
- *
- * @return {String} project name
- */
-function getProjectName() {
-    if (configHelper === undefined) {
-        configHelper = new ConfigXmlHelper(context);
-    }
-
-    return configHelper.getProjectName();
-}
-
 function getPackageName() {
     if (configHelper === undefined) {
         configHelper = new ConfigXmlHelper(context);
@@ -155,5 +118,3 @@ function getPackageName() {
 
     return configHelper.getPackageName();
 }
-
-// endregion

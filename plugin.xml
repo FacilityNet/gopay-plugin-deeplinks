@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<plugin id="gopay-plugin-deeplinks" version="2.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="@facilitynet/gopay-plugin-deeplinks" version="2.3.2" xmlns="http://apache.org/cordova/ns/plugins/1.0">
 
   <name>GoPay Deeplinks Plugin</name>
   <description>
@@ -45,6 +45,8 @@
 
     <source-file src="src/ios/AppDelegate+CULPlugin.m"/>
     <header-file src="src/ios/AppDelegate+CULPlugin.h"/>
+    <source-file src="src/ios/SceneDelegate+CULPlugin.m"/>
+    <header-file src="src/ios/SceneDelegate+CULPlugin.h"/>
 
 <!-- sources for JS folder -->
     <source-file src="src/ios/JS/CDVPluginResult+CULPlugin.m" target-dir="JS/"/>
@@ -80,7 +82,6 @@
 <!-- sources for Utils folder -->
     <source-file src="src/ios/Utils/NSBundle+CULPlugin.m" target-dir="Utils/"/>
     <header-file src="src/ios/Utils/NSBundle+CULPlugin.h" target-dir="Utils/"/>
-
   </platform>
 
   <platform name="android">
