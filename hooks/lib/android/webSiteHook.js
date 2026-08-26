@@ -57,11 +57,10 @@ function generateWebHook(cordovaContext, pluginPreferences) {
  * @return {String} data from the template file
  */
 function readTemplate(projectRoot) {
-  var filePath = path.join(projectRoot, WEB_HOOK_TPL_FILE_PATH);
   var tplData = null;
 
   try {
-    tplData = fs.readFileSync(filePath, 'utf8');
+    tplData = fs.readFileSync(WEB_HOOK_TPL_FILE_PATH, 'utf8');
   } catch (err) {
     console.warn('Template file for android web hook is not found!');
     console.warn(err);
