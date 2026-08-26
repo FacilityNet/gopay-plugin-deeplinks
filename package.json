@@ -1,6 +1,6 @@
 {
   "name": "@facilitynet/gopay-plugin-deeplinks",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Cordova plugin to add in your application support for Universal Links (iOS 9) and Deep Links (Android). Basically, open application through the link in the browser. Also supports custom URL schemes.",
   "cordova": {
     "id": "gopay-plugin-deeplinks",
