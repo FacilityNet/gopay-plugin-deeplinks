@@ -1,6 +1,6 @@
 {
-  "name": "gopay-plugin-deeplinks",
-  "version": "2.0.0",
+  "name": "@facilitynet/gopay-plugin-deeplinks",
+  "version": "2.3.4",
   "description": "Cordova plugin to add in your application support for Universal Links (iOS 9) and Deep Links (Android). Basically, open application through the link in the browser. Also supports custom URL schemes.",
   "cordova": {
     "id": "gopay-plugin-deeplinks",
@@ -11,7 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:FacilityNet/gopay-plugin-deeplinks.git"
+    "url": "https://github.com/FacilityNet/gopay-plugin-deeplinks.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "cordova",
@@ -31,11 +34,9 @@
     "cordova-android": ">=4"
   },
   "dependencies": {
-    "mkpath": ">=1.0.0",
-    "xml2js": ">=0.4",
-    "rimraf": ">=2.4",
-    "node-version-compare": ">=1.0.1",
-    "plist": ">=1.2.0"
+    "node-version-compare": "^1.0.3",
+    "plist": "^3.1.0",
+    "xml2js": "^0.6.2"
   },
   "author": "Nikolay Demyankov for Nordnet Bank AB",
   "license": "MIT",

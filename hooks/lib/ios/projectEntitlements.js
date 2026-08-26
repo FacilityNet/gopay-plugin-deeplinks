@@ -11,11 +11,9 @@ var fs = require('fs');
 var plist = require('plist');
 var mkpath = require('mkpath');
 var ConfigXmlHelper = require('../configXmlHelper.js');
+var fileUtil = require('./fileUtil.js');
 var ASSOCIATED_DOMAINS = 'com.apple.developer.associated-domains';
 var context;
-var projectRoot;
-var projectName;
-var entitlementsFilePath;
 
 module.exports = {
   generateAssociatedDomainsEntitlements: generateEntitlements
@@ -49,7 +47,7 @@ function generateEntitlements(cordovaContext, pluginPreferences) {
  */
 function saveContentToEntitlementsFile(content) {
   var plistContent = plist.build(content);
-  var filePath = pathToEntitlementsFile();
+  var filePath = fileUtil.pathToEntitlementsFile(context);
 
   // ensure that file exists
   mkpath.sync(path.dirname(filePath));
@@ -64,7 +62,7 @@ function saveContentToEntitlementsFile(content) {
  * @return {String} entitlements file content
  */
 function getEntitlementsFileContent() {
-  var pathToFile = pathToEntitlementsFile();
+  var pathToFile = fileUtil.pathToEntitlementsFile(context);
   var content;
 
   try {
@@ -129,46 +127,6 @@ function generateAssociatedDomainsContent(pluginPreferences) {
  */
 function domainsListEntryForHost(host) {
   return 'applinks:' + host.name;
-}
-
-// endregion
-
-// region Path helper methods
-
-/**
- * Path to entitlements file.
- *
- * @return {String} absolute path to entitlements file
- */
-function pathToEntitlementsFile() {
-  if (entitlementsFilePath === undefined) {
-    entitlementsFilePath = path.join(getProjectRoot(), 'platforms', 'ios', getProjectName(), 'Resources', getProjectName() + '.entitlements');
-  }
-
-  return entitlementsFilePath;
-}
-
-/**
- * Projects root folder path.
- *
- * @return {String} absolute path to the projects root
- */
-function getProjectRoot() {
-  return context.opts.projectRoot;
-}
-
-/**
- * Name of the project from config.xml
- *
- * @return {String} project name
- */
-function getProjectName() {
-  if (projectName === undefined) {
-    var configXmlHelper = new ConfigXmlHelper(context);
-    projectName = configXmlHelper.getProjectName();
-  }
-
-  return projectName;
 }
 
 // endregion

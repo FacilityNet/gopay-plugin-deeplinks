@@ -6,7 +6,7 @@ If file name has no changed - hook will do nothing.
 
 var path = require('path');
 var fs = require('fs');
-var ConfigXmlHelper = require('./lib/configXmlHelper.js');
+var fileUtil = require('./lib/ios/fileUtil.js');
 
 module.exports = function(ctx) {
   run(ctx);
@@ -18,10 +18,14 @@ module.exports = function(ctx) {
  * @param {Object} ctx - cordova context object
  */
 function run(ctx) {
-  var projectRoot = ctx.opts.projectRoot;
-  var iosProjectFilePath = path.join(projectRoot, 'platforms', 'ios');
-  var configXmlHelper = new ConfigXmlHelper(ctx);
-  var newProjectName = configXmlHelper.getProjectName();
+  const iosProjectFilePath = fileUtil.iosPlatformPath(ctx);
+  const newProjectName = path.basename(fileUtil.getProjectFolder(ctx));
+
+  if (newProjectName === "App") {
+    // In cordova-ios 8.x the project folder is always named App and we no
+    // longer need to worry about renaming entitlements
+    return;
+  }
 
   var oldProjectName = getOldProjectName(iosProjectFilePath);
 
