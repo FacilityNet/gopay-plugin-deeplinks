@@ -1,6 +1,5 @@
 var path = require('path');
 var fs = require('fs');
-var mkpath = require('mkpath');
 var plist = require('plist');
 var ConfigXmlHelper = require('../configXmlHelper.js');
 var fileUtil = require('./fileUtil.js');
@@ -32,7 +31,7 @@ function saveContentToProjectInfoFile(content) {
     var plistContent = plist.build(content);
     var filePath = fileUtil.pathToProjectInfoFile();
 
-    mkpath.sync(path.dirname(filePath));
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, plistContent, "utf8");
 }
 

@@ -9,7 +9,6 @@ https://developer.android.com/training/app-indexing/enabling-app-indexing.html
 
 var fs = require('fs');
 var path = require('path');
-var mkpath = require('mkpath');
 var ConfigXmlHelper = require('../configXmlHelper.js');
 var WEB_HOOK_FILE_PATH = path.join('ul_web_hooks', 'android', 'android_web_hook.html');
 var WEB_HOOK_TPL_FILE_PATH = path.join('plugins', 'gopay-plugin-deeplinks', 'ul_web_hooks', 'android_web_hook_tpl.html');
@@ -153,7 +152,7 @@ function saveWebHook(projectRoot, hookContent) {
  */
 function createDirectoryIfNeeded(dir) {
   try {
-    mkpath.sync(dir);
+    fs.mkdirSync(dir, { recursive: true });
   } catch (err) {
     console.log(err);
   }

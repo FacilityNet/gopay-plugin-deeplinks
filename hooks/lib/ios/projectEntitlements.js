@@ -9,7 +9,6 @@ Script only generates content. File it self is included in the xcode project in 
 var path = require('path');
 var fs = require('fs');
 var plist = require('plist');
-var mkpath = require('mkpath');
 var ConfigXmlHelper = require('../configXmlHelper.js');
 var fileUtil = require('./fileUtil.js');
 var ASSOCIATED_DOMAINS = 'com.apple.developer.associated-domains';
@@ -50,7 +49,7 @@ function saveContentToEntitlementsFile(content) {
   var filePath = fileUtil.pathToEntitlementsFile(context);
 
   // ensure that file exists
-  mkpath.sync(path.dirname(filePath));
+  fs.mkdirSync(path.dirname(filePath));
 
   // save it's content
   fs.writeFileSync(filePath, plistContent, 'utf8');
