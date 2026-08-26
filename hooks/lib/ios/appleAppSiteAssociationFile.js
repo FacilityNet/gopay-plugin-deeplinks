@@ -18,9 +18,7 @@ Additional documentation regarding apple-app-site-association file can be found 
 
 
 var path = require('path');
-var mkpath = require('mkpath');
 var fs = require('fs');
-var rimraf = require('rimraf');
 var ConfigXmlHelper = require('../configXmlHelper.js');
 var fileUtil = require('./fileUtil.js');
 
@@ -55,7 +53,7 @@ function generate(cordovaContext, pluginPreferences) {
  * Remove old files from ul_web_hooks/ios folder.
  */
 function removeOldFiles() {
-  rimraf.sync(fileUtil.pathToWebHookDirectory(context));
+  fs.rmSync(fileUtil.pathToWebHookDirectory(context), { recursive: true, force: true });
 }
 
 /**
@@ -130,7 +128,7 @@ function saveContentToFile(filePrefix, content) {
  */
 function createDirectoriesIfNeeded(dirPath) {
   try {
-    mkpath.sync(dirPath);
+    fs.mkdirSync(dirPath, { recursive: true });
   } catch (err) {
     console.log(err);
   }
