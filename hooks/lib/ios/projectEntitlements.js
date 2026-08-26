@@ -49,7 +49,7 @@ function saveContentToEntitlementsFile(content) {
   var filePath = fileUtil.pathToEntitlementsFile(context);
 
   // ensure that file exists
-  fs.mkdirSync(path.dirname(filePath));
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
   // save it's content
   fs.writeFileSync(filePath, plistContent, 'utf8');
