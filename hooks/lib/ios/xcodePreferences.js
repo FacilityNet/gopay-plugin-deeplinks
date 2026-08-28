@@ -2,8 +2,14 @@
 Script activates support for Universal Links in the application by setting proper preferences in the xcode project file.
 Which is:
 - deployment target set to iOS 9.0
-- .entitlements file added to project PBXGroup and PBXFileReferences section
-- path to .entitlements file added to Code Sign Entitlements preference
+
+Note: this used to also point CODE_SIGN_ENTITLEMENTS at a plugin-generated
+.entitlements file and register it as a project resource. That overrode the
+cordova-ios generated Entitlements-Debug.plist/Entitlements-Release.plist
+(breaking any other plugin, e.g. push notification plugins, that contributes
+keys to those files) and tripped Xcode's Copy Bundle Resources validation.
+The associated-domains entitlement is now merged into the existing
+Entitlements-*.plist files instead - see projectEntitlements.js.
 */
 
 var path = require('path');
@@ -34,9 +40,6 @@ function enableAssociativeDomainsCapability(cordovaContext) {
   // adjust preferences
   activateAssociativeDomains(projectFile.xcode);
 
-  // add entitlements file to pbxfilereference
-  addPbxReference(projectFile.xcode);
-
   // save changes
   projectFile.write();
 }
@@ -46,22 +49,19 @@ function enableAssociativeDomainsCapability(cordovaContext) {
 // region Alter project file preferences
 
 /**
- * Activate associated domains support in the xcode project file:
- * - set deployment target to ios 9;
- * - add .entitlements file to Code Sign Entitlements preference.
+ * Activate associated domains support in the xcode project file by making
+ * sure the deployment target is at least iOS 9.
  *
  * @param {Object} xcodeProject - xcode project preferences; all changes are made in that instance
  */
 function activateAssociativeDomains(xcodeProject) {
   var configurations = nonComments(xcodeProject.pbxXCBuildConfigurationSection());
-  var entitlementsFilePath = fileUtil.pathToEntitlementsFile(context);
   var config;
   var buildSettings;
   var deploymentTargetIsUpdated;
 
   for (config in configurations) {
     buildSettings = configurations[config].buildSettings;
-    buildSettings['CODE_SIGN_ENTITLEMENTS'] = '"' + entitlementsFilePath + '"';
 
     // if deployment target is less then the required one - increase it
     if (buildSettings['IPHONEOS_DEPLOYMENT_TARGET']) {
@@ -78,54 +78,9 @@ function activateAssociativeDomains(xcodeProject) {
   if (deploymentTargetIsUpdated) {
     console.log('IOS project now has deployment target set as: ' + IOS_DEPLOYMENT_TARGET);
   }
-
-  console.log('IOS project Code Sign Entitlements now set to: ' + entitlementsFilePath);
 }
 
 // endregion
-
-// region PBXReference methods
-
-/**
- * Add .entitlemets file into the project.
- *
- * @param {Object} xcodeProject - xcode project preferences; all changes are made in that instance
- */
-function addPbxReference(xcodeProject) {
-  var fileReferenceSection = nonComments(xcodeProject.pbxFileReferenceSection());
-  var entitlementsFileName = path.basename(fileUtil.pathToEntitlementsFile(context));
-
-  if (isPbxReferenceAlreadySet(fileReferenceSection, entitlementsFileName)) {
-    console.log('Entitlements file is in reference section.');
-    return;
-  }
-
-  console.log('Entitlements file is not in references section, adding it');
-  xcodeProject.addResourceFile(entitlementsFileName);
-}
-
-/**
- * Check if .entitlemets file reference already set.
- *
- * @param {Object} fileReferenceSection - PBXFileReference section
- * @param {String} entitlementsRelativeFilePath - relative path to entitlements file
- * @return true - if reference is set; otherwise - false
- */
-function isPbxReferenceAlreadySet(fileReferenceSection, entitlementsRelativeFilePath) {
-  var isAlreadyInReferencesSection = false;
-  var uuid;
-  var fileRefEntry;
-
-  for (uuid in fileReferenceSection) {
-    fileRefEntry = fileReferenceSection[uuid];
-    if (fileRefEntry.path && fileRefEntry.path.indexOf(entitlementsRelativeFilePath) > -1) {
-      isAlreadyInReferencesSection = true;
-      break;
-    }
-  }
-
-  return isAlreadyInReferencesSection;
-}
 
 // region Xcode project file helpers
 

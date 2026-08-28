@@ -2,7 +2,6 @@ const path = require('path');
 const cordova_ios = require('cordova-ios');
 
 let projectFolder;
-let entitlementsFilePath;
 let projectInfoFilePath;
 
 /**
@@ -34,18 +33,15 @@ function getProjectFolder(context) {
 }
 
 /**
- * Path to entitlements file.
+ * Path to the cordova-ios generated per-configuration entitlements plist.
  *
- * @return {String} absolute path to entitlements file
+ * @param {Object} context - cordova context object
+ * @param {String} buildConfiguration - 'Debug' or 'Release'
+ * @return {String} absolute path to Entitlements-<buildConfiguration>.plist
  */
-function pathToEntitlementsFile(context) {
-  if (entitlementsFilePath === undefined) {
-    const projectFolder = getProjectFolder(context);
-    const projectName = path.basename(projectFolder);
-    entitlementsFilePath = path.join(projectFolder, 'Resources', projectName + '.entitlements');
-  }
-
-  return entitlementsFilePath;
+function pathToBuildEntitlementsPlist(context, buildConfiguration) {
+  const projectFolder = getProjectFolder(context);
+  return path.join(projectFolder, 'Entitlements-' + buildConfiguration + '.plist');
 }
 
 /**
@@ -75,7 +71,7 @@ function pathToWebHookDirectory(context) {
 module.exports = {
   iosPlatformPath: iosPlatformPath,
   getProjectFolder: getProjectFolder,
-  pathToEntitlementsFile: pathToEntitlementsFile,
+  pathToBuildEntitlementsPlist: pathToBuildEntitlementsPlist,
   pathToProjectInfoFile: pathToProjectInfoFile,
   pathToWebHookDirectory: pathToWebHookDirectory,
 };

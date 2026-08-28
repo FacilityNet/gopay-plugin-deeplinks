@@ -1,17 +1,20 @@
 /*
-Script creates entitlements file with the list of hosts, specified in config.xml.
-File name is: ProjectName.entitlements
-Location: ProjectName/
+Script merges the com.apple.developer.associated-domains entitlement, built from
+the hosts specified in config.xml, into the cordova-ios generated
+Entitlements-Debug.plist and Entitlements-Release.plist files.
 
-Script only generates content. File it self is included in the xcode project in another hook: xcodePreferences.js.
+Those files already exist by the time this hook runs (cordova-ios generates
+them and points CODE_SIGN_ENTITLEMENTS at them). We only set our one key and
+leave everything else - e.g. keys other plugins added via a config-file
+target pointed at the Entitlements plists - untouched.
 */
 
-var path = require('path');
 var fs = require('fs');
+var path = require('path');
 var plist = require('plist');
-var ConfigXmlHelper = require('../configXmlHelper.js');
 var fileUtil = require('./fileUtil.js');
 var ASSOCIATED_DOMAINS = 'com.apple.developer.associated-domains';
+var BUILD_CONFIGURATIONS = ['Debug', 'Release'];
 var context;
 
 module.exports = {
@@ -21,7 +24,8 @@ module.exports = {
 // region Public API
 
 /**
- * Generate entitlements file content.
+ * Merge associated-domains entitlement into the existing per-configuration
+ * entitlements plists.
  *
  * @param {Object} cordovaContext - cordova context object
  * @param {Object} pluginPreferences - plugin preferences from config.xml; already parsed
@@ -29,73 +33,41 @@ module.exports = {
 function generateEntitlements(cordovaContext, pluginPreferences) {
   context = cordovaContext;
 
-  var currentEntitlements = getEntitlementsFileContent();
-  var newEntitlements = injectPreferences(currentEntitlements, pluginPreferences);
+  var associatedDomains = generateAssociatedDomainsContent(pluginPreferences);
 
-  saveContentToEntitlementsFile(newEntitlements);
+  BUILD_CONFIGURATIONS.forEach(function(buildConfiguration) {
+    mergeAssociatedDomainsIntoPlist(buildConfiguration, associatedDomains);
+  });
 }
 
 // endregion
 
-// region Work with entitlements file
+// region Work with entitlements plist
 
 /**
- * Save data to entitlements file.
+ * Read an existing Entitlements-<buildConfiguration>.plist, set the
+ * associated-domains key on it and write it back. Skips the configuration if
+ * the file doesn't exist rather than creating one.
  *
- * @param {Object} content - data to save; JSON object that will be transformed into xml
+ * @param {String} buildConfiguration - 'Debug' or 'Release'
+ * @param {Array} associatedDomains - list of 'applinks:<host>' entries
  */
-function saveContentToEntitlementsFile(content) {
-  var plistContent = plist.build(content);
-  var filePath = fileUtil.pathToEntitlementsFile(context);
-
-  // ensure that file exists
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-
-  // save it's content
-  fs.writeFileSync(filePath, plistContent, 'utf8');
-}
-
-/**
- * Read data from existing entitlements file. If none exist - default value is returned
- *
- * @return {String} entitlements file content
- */
-function getEntitlementsFileContent() {
-  var pathToFile = fileUtil.pathToEntitlementsFile(context);
+function mergeAssociatedDomainsIntoPlist(buildConfiguration, associatedDomains) {
+  var filePath = fileUtil.pathToBuildEntitlementsPlist(context, buildConfiguration);
   var content;
 
   try {
-    content = fs.readFileSync(pathToFile, 'utf8');
+    content = fs.readFileSync(filePath, 'utf8');
   } catch (err) {
-    return defaultEntitlementsFile();
+    console.warn('Entitlements-' + buildConfiguration + '.plist not found at ' + filePath + '; skipping associated domains injection.');
+    return;
   }
 
-  return plist.parse(content);
-}
+  var entitlements = plist.parse(content);
+  entitlements[ASSOCIATED_DOMAINS] = associatedDomains;
 
-/**
- * Get content for an empty entitlements file.
- *
- * @return {String} default entitlements file content
- */
-function defaultEntitlementsFile() {
-  return {};
-}
-
-/**
- * Inject list of hosts into entitlements file.
- *
- * @param {Object} currentEntitlements - entitlements where to inject preferences
- * @param {Object} pluginPreferences - list of hosts from config.xml
- * @return {Object} new entitlements content
- */
-function injectPreferences(currentEntitlements, pluginPreferences) {
-  var newEntitlements = currentEntitlements;
-  var content = generateAssociatedDomainsContent(pluginPreferences);
-
-  newEntitlements[ASSOCIATED_DOMAINS] = content;
-
-  return newEntitlements;
+  fs.writeFileSync(filePath, plist.build(entitlements), 'utf8');
+  console.log('Added associated domains to ' + path.basename(filePath));
 }
 
 /**
