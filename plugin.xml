@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<plugin id="@facilitynet/gopay-plugin-deeplinks" version="2.3.9" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="@facilitynet/gopay-plugin-deeplinks" version="2.3.10" xmlns="http://apache.org/cordova/ns/plugins/1.0">
 
   <name>GoPay Deeplinks Plugin</name>
   <description>
